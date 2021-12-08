@@ -1,0 +1,15 @@
+.perenos-hyphens {
+-moz-hyphens: auto;
+-webkit-hyphens: auto;
+-ms-hyphens: auto;
+}
+
+.p{
+white-space: pre-wrap;
+}
+
+.block{
+  display: block;
+  margin: 0 auto;
+  width: 80%;
+}

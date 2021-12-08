@@ -1,0 +1,74 @@
+<div class="user-info">
+
+  <h1 class="text-center">Личный кабинет пользователя</h1>
+  <br>
+
+  <div style="padding-top: 2rem" class="shadow-lg rounded row  p-5">
+    <div class="col text-center">
+      <img class="profile-image" [src]="previewImgURL || formatImage(userProfileImage) || 'https://www.missingdogsuk.co.uk/wp-content/plugins/wp-job-manager-resumes/assets/images/candidate.png'" alt="user image">
+      <input type="file"
+             style="display: none"
+             #fileInput
+             (change)="onFileSelected($event)">
+      <button mat-button (click)="fileInput.click()">Загрузите фото</button>
+      <button mat-button *ngIf="selectedFile" (click)="onUpload()">Загрузить</button>
+    </div>
+
+    <div class="shadow-lg rounded col text-start border border-primary border-2 p-2 m-1">
+      <h2>Имя: {{user.name}}</h2>
+      <h2>Фамилия: {{user.lastname}}</h2>
+      <h2 *ngIf="user.role == 'Работник'">Профессия: {{user.profession}}</h2>
+      <h2>Телефон: {{user.phoneNumber}}</h2>
+      <h2>Email: {{user.email}}</h2>
+      <button mat-flat-button color="primary" (click)="openEditDialog()">Редактировать информацию</button>
+    </div>
+
+    <div *ngIf="user.role == 'Работник'">
+      <br>
+      <h2>Загрузите свое резюме в формате pdf</h2>
+      <input type="file"
+             style="display: none"
+             #fileInput
+             (change)="onSummarySelected($event)" accept=".pdf">
+      <button mat-button (click)="fileInput.click()">Выбрать файл</button>
+      <button mat-button *ngIf="selectedFile" (click)="uploadSummary()">Загрузить</button>
+      <button mat-flat-button color="primary" (click)="upload()">Посмотреть резюме</button>
+    </div>
+
+    <div *ngIf="user.role == 'Рекрутер'" class="shadow-lg rounded col text-start border border-primary border-2 p-2 m-1">
+        <h2>Доступные действия:</h2>
+        <button mat-flat-button color="primary" routerLink="/addVacancy">Создать вакансию</button>
+        <br>
+        <br>
+        <button mat-flat-button color="primary" routerLink="/main">Посмотреть список вакансий</button>
+    </div>
+  </div>
+
+  <mat-divider style="margin: 2rem 0"></mat-divider>
+  <br>
+
+  <h2 *ngIf="user.role == 'Рекрутер'" class="text-center">Созданные вакансии</h2>
+  <h2 *ngIf="user.role == 'Работник'" class="text-center">Заинтересовавшие Вас вакансии</h2>
+
+  <div *ngIf="user.role == 'Работник'" class="row justify-content-start">
+    <div >
+      <button  (click)="ngOnInit()" class="m-1 btn btn-success">Все вакансии</button>
+      <button  (click)="injectedVacancys()" class="m-1 btn btn-success">Отклоненные</button>
+      <button  (click)="acceptedVacancys()" class="m-1 btn btn-success">Одобренные</button>
+    </div>
+  </div>
+
+  <div class="row row-cols-2 p-3">
+    <div *ngFor="let vacancy of vacancys; let c = index" class="col p-2">
+      <div  class="shadow-lg rounded border border-primary border-2 p-3">
+        <h2><a routerLink="/vacancy/{{vacancy.id}}">{{vacancy.profession}}</a></h2>
+        <p>Создатель вакансии - <a routerLink="/user/{{vacancy.recruiter.id}}">{{vacancy.recruiter.name}} {{vacancy.recruiter.lastname}}</a></p>
+        <h3 class="text-start">{{vacancy.company}}</h3>
+        <p class="text-start" class="size">{{vacancy.description}}</p>
+        <br>
+        <p class="text-start">{{vacancy.adress}}</p>
+        <h2 *ngIf="user.role == 'Рекрутер'">Откликов на вакансию - {{vacancy.candidateList.length}}</h2>
+      </div>
+    </div>
+  </div>
+</div>

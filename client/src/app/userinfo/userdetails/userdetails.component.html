@@ -1,0 +1,23 @@
+<div class="user-info">
+  <br>
+  <h2 class="text-center">Профиль пользователя</h2>
+  <div class="row shadow-lg rounded p-5">
+
+    <div class="col text-center">
+      <img class="profile-image" [src]="formatImage(userProfileImage) || 'https://www.missingdogsuk.co.uk/wp-content/plugins/wp-job-manager-resumes/assets/images/candidate.png'" alt="user image">
+    </div>
+
+    <div class="col">
+        <h2>Имя: {{user.name}}</h2>
+        <h2>Фамилия: {{user.lastname}}</h2>
+        <h2>Профессия: {{user.profession}}</h2>
+        <h2>Телефон: {{user.phoneNumber}}</h2>
+        <h2>Email: {{user.email}}</h2>
+        <button *ngIf="user.role == 'Работник'" mat-flat-button color="primary" (click)="summary()">Посмотреть резюме</button>
+    </div>
+  </div>
+</div>
+
+
+
+

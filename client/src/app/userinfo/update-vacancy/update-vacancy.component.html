@@ -1,0 +1,34 @@
+<div>
+  <h2>Редактировать вакансию</h2>
+  <form [formGroup]="vacancyEditForm">
+
+    <mat-form-field class="w-100" appearance="outline">
+      <mat-label>Компания</mat-label>
+      <input matInput
+             formControlName="company">
+    </mat-form-field>
+
+    <mat-form-field class="w-100" appearance="outline">
+      <mat-label>Профессия</mat-label>
+      <input matInput
+             formControlName="profession">
+    </mat-form-field>
+
+    <mat-form-field class="w-100" appearance="outline">
+      <mat-label>Описание</mat-label>
+      <textarea matInput
+                formControlName="description" rows="30"></textarea>
+    </mat-form-field>
+
+    <mat-form-field class="w-100" appearance="outline">
+      <mat-label>Адрес</mat-label>
+      <input matInput
+             formControlName="adress">
+    </mat-form-field>
+
+    <div class="row">
+      <button (click)="closeDialog()" class="w-50" mat-button mat-dialog-close disableRipple>Закрыть</button>
+      <button color="primary" class="w-50" [disabled]="vacancyEditForm.invalid" (click)="submit()" mat-button disableRipple>Обновить</button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,19 @@
+.size {
+  margin: 0; /* Убираем внешний отступ */
+  -webkit-line-clamp: 3; /* Число отображаемых строк */
+  display: -webkit-box; /* Включаем флексбоксы */
+  -webkit-box-orient: vertical; /* Вертикальная ориентация */
+  overflow: hidden; /* Обрезаем всё за пределами блока */
+}
+
+.main {
+  display: block;
+  margin: 0 auto;
+  width: 60%;
+  padding-top: 3rem;
+}
+
+form {
+ display:flex;
+ flex-direction:row;
+}

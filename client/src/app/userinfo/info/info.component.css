@@ -1,0 +1,30 @@
+.user-info {
+  display: block;
+  margin: 0 auto;
+  width: 60%;
+  padding-top: 3rem;
+}
+
+.profile-image {
+  border-radius: 50%;
+  width: 225px;
+  height: 250px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 2rem;
+}
+
+.size {
+  margin: 0; /* Убираем внешний отступ */
+  -webkit-line-clamp: 3; /* Число отображаемых строк */
+  display: -webkit-box; /* Включаем флексбоксы */
+  -webkit-box-orient: vertical; /* Вертикальная ориентация */
+  overflow: hidden; /* Обрезаем всё за пределами блока */
+}
+
+.block{
+  display: block;
+  margin: 0 auto;
+  width: 80%;
+}

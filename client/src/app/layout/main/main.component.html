@@ -1,0 +1,42 @@
+<br>
+
+<div class="container">
+
+  <div class="text-center">
+    <h1>Добро пожаловать в Recruiter!</h1>
+    <h3>Для просмотра имеющихся вакансий пройдите <a routerLink="/register">регистрацию!</a></h3>
+    <h3>Если вы уже зарегестрированы - выполните <a routerLink="/login">вход!</a></h3>
+    <p>Для поиска подходящих вакансий регистрируйтесь в качестве работника.</p>
+    <p>Если вы хотите добавить вакансию на сайт для поиска кандидатов - регистрируйтесь в качестве рекрутера.</p>
+  </div>
+
+  <br>
+  <h2 class="text-center">Список вакансий</h2>
+
+  <form [formGroup]="searchForm">
+    <div class="row">
+      <mat-form-field appearance="outline" [style.width.rem]=32>
+        <mat-label>Найти вакансию</mat-label>
+        <input matInput
+               formControlName="str">
+      </mat-form-field>
+
+      <button style="width: 5rem; height: 4rem" (click)="submit()" mat-flat-button color="primary">Найти</button>
+    </div>
+  </form>
+
+  <div class="row row-cols-2 p-3">
+    <div *ngFor="let vacancy of vacancys; let c = index" class="col p-2">
+      <div class="shadow-lg rounded border border-primary border-2 p-3">
+        <h2><a routerLink="/vacancy/{{vacancy.id}}">{{vacancy.profession}}</a></h2>
+        <p>Создатель вакансии - <a routerLink="/user/{{vacancy.recruiter.id}}">{{vacancy.recruiter.name}} {{vacancy.recruiter.lastname}}</a></p>
+        <h3 class="text-start">{{vacancy.company}}</h3>
+        <p class="text-start" class="size">{{vacancy.description}}</p>
+        <br>
+        <p class="text-start">{{vacancy.adress}}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+

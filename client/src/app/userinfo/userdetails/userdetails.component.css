@@ -1,0 +1,15 @@
+.profile-image {
+  border-radius: 50%;
+  width: 225px;
+  height: 250px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 2rem;
+}
+
+.user-info {
+  display: block;
+  margin: 0 auto;
+  width: 40%;
+}

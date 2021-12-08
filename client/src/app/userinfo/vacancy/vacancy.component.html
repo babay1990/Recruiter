@@ -1,0 +1,53 @@
+<div class="container">
+  <br>
+  <div  class="shadow-lg rounded border border-primary border-2 p-3 block">
+    <h2>{{vacancy.profession}}</h2>
+    <h3 class="text-start">{{vacancy.company}}</h3>
+    <p class="text-start perenos-hyphens p">{{vacancy.description}}</p>
+    <br>
+    <p class="text-start">Адрес: {{vacancy.adress}}</p>
+    <button *ngIf="user.role == 'Работник' && !canApply" mat-flat-button color="primary" (click)="applyForVacancy()">Откликнуться</button>
+  </div>
+
+  <br>
+
+  <div *ngIf="user.email == vacancy.recruiter.email" class="shadow-lg rounded row justify-content-start border border-primary border-2 p-3 block">
+    <h2 class="text-center">Доступные действия:</h2>
+
+    <div class="text-center">
+      <button mat-flat-button color="primary" (click)="updateVacancy()" class="m-2">Редактировать вакансию</button>
+      <button mat-flat-button color="primary" (click)="deleteVacancy()" class="m-2">Удалить вакансию</button>
+    </div>
+  </div>
+</div>
+
+<br>
+<div *ngIf="user.email == vacancy.recruiter.email" class="container">
+  <div class="row">
+    <div class=" shadow-lg rounded col text-start border border-primary border-2 m-2">
+      <h2>Список откликнувшихся кандидатов:</h2>
+      <div *ngFor="let candidate of vacancy.candidateList; let c = index" class="p-2 text-start">
+        <h2><a routerLink="/user/{{candidate.id}}">{{candidate.name}} {{candidate.lastname}}</a> -  {{candidate.profession}}</h2>
+        <button (click)="injectCandidate(candidate.id)" class="m-1 btn btn-danger btn-sm">Отклонить кандидата</button>
+        <button (click)="approveCandidate(candidate.id)" class="m-1 btn btn-success btn-sm">Одобрить кандидата</button>
+        <mat-divider style="margin: 2rem 0"></mat-divider>
+      </div>
+    </div>
+
+    <div class="shadow-lg rounded col text-start border border-primary border-2 m-2">
+      <h2>Список отклоненных кандидатов:</h2>
+      <div *ngFor="let candidate of vacancy.injectedCandidateList; let c = index" class="p-2 text-start">
+        <h2><a routerLink="/user/{{candidate.id}}">{{candidate.name}} {{candidate.lastname}}</a> -  {{candidate.profession}}</h2>
+        <mat-divider style="margin: 2rem 0"></mat-divider>
+        </div>
+    </div>
+
+    <div class="shadow-lg rounded col text-start border border-primary border-2 m-2">
+      <h2>Список одобренных кандидатов:</h2>
+      <div *ngFor="let candidate of vacancy.approvedCandidateList; let c = index" class="p-2 text-start">
+        <h2><a routerLink="/user/{{candidate.id}}">{{candidate.name}} {{candidate.lastname}}</a> -  {{candidate.profession}}</h2>
+        <mat-divider style="margin: 2rem 0"></mat-divider>
+      </div>
+    </div>
+  </div>
+</div>
