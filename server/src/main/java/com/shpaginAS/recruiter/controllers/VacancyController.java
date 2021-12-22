@@ -1,10 +1,12 @@
 package com.shpaginAS.recruiter.controllers;
 
 import com.shpaginAS.recruiter.DTO.VacancyDTO;
+import com.shpaginAS.recruiter.models.Message;
 import com.shpaginAS.recruiter.models.User;
 import com.shpaginAS.recruiter.models.Vacancy;
 import com.shpaginAS.recruiter.payload.MessageResponse;
 import com.shpaginAS.recruiter.repository.VacancyRepository;
+import com.shpaginAS.recruiter.services.KafkaProducerService;
 import com.shpaginAS.recruiter.services.UserService;
 import com.shpaginAS.recruiter.services.VacancyService;
 import com.shpaginAS.recruiter.validations.ResponceErrorValidation;
@@ -33,7 +35,9 @@ public class VacancyController {
     @Autowired
     private UserService userService;
     @Autowired
-    VacancyRepository vacancyRepository;
+    private VacancyRepository vacancyRepository;
+    @Autowired
+    private KafkaProducerService producerService;
 
     @PostMapping("/create")
     public ResponseEntity<Object> createVacancy(@Valid @RequestBody VacancyDTO vacancyDTO,
@@ -42,29 +46,29 @@ public class VacancyController {
         ResponseEntity<Object> errors = responceErrorValidation.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errors)) return errors;
 
-        System.out.println(vacancyDTO.getAdress());
         vacancyService.createVacancy(vacancyDTO, principal);
 
-        return ResponseEntity.ok(new MessageResponse("Vacancy crested!"));
+        return ResponseEntity.ok(new MessageResponse("Vacancy created!"));
     }
 
     @PostMapping("/search")
-    public ResponseEntity<Object> seacrhVacancy(@Valid @RequestBody String str){
+    public ResponseEntity<Object> findAVacancy(@Valid @RequestBody String str){
 
-        Iterable<Vacancy> vacancyList = vacancyRepository.findAll();
+        Iterable<Vacancy> allVacancies = vacancyRepository.findAll();
         ArrayList<Vacancy> result = new ArrayList<>();
 
-        if(str.isEmpty()){
-            return new ResponseEntity<>(vacancyList, HttpStatus.OK);
-        }
-
-        for(Vacancy vacancy : vacancyList){
-            if(vacancy.getProfession().contains(str) || vacancy.getProfession().toUpperCase().contains(str) ||
-                vacancy.getProfession().toLowerCase().contains(str)){
-                result.add(vacancy);
+        if(!str.isEmpty()){
+            for(Vacancy vacancy : allVacancies){
+                if(vacancy.getProfession().contains(str) || vacancy.getProfession().toUpperCase().contains(str) ||
+                        vacancy.getProfession().toLowerCase().contains(str)){
+                    result.add(vacancy);
+                }
             }
-        }
-        return new ResponseEntity<>(result, HttpStatus.OK);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+
+        } else return new ResponseEntity<>(allVacancies, HttpStatus.OK);
+
+
     }
 
 
@@ -75,9 +79,9 @@ public class VacancyController {
         Vacancy vacancy = op.get();
         User user = userService.getCurrentUser(principal);
 
-        ArrayList<String> list = new ArrayList<>();
+        ArrayList<String> candidateList = new ArrayList<>();
         for(User users : vacancy.getCandidateList()){
-            list.add(users.getEmail());
+            candidateList.add(users.getEmail());
         }
 
         ArrayList<String> injectedList = new ArrayList<>();
@@ -90,7 +94,7 @@ public class VacancyController {
             approvedList.add(users.getEmail());
         }
 
-        if(list.contains(user.getEmail()) || approvedList.contains(user.getEmail()) || injectedList.contains(user.getEmail())) return true;
+        if(candidateList.contains(user.getEmail()) || approvedList.contains(user.getEmail()) || injectedList.contains(user.getEmail())) return true;
         else return false;
     }
 
@@ -105,7 +109,7 @@ public class VacancyController {
     }
 
     @PostMapping("/update")
-    public ResponseEntity<Object> updateUser(@Valid @RequestBody Vacancy vacancy, BindingResult bindingResult) {
+    public ResponseEntity<Object> updateVacancy(@Valid @RequestBody Vacancy vacancy, BindingResult bindingResult) {
         ResponseEntity<Object> errors = responceErrorValidation.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errors)) return errors;
 
@@ -123,8 +127,9 @@ public class VacancyController {
         return new ResponseEntity<>(vacancyUpdated, HttpStatus.OK);
     }
 
+    //в массиве list передаем id вакансии ([0]) и id кандидата ([1])
     @PostMapping("/injectCandidate")
-    public ResponseEntity<Object> updateUser(@Valid @RequestBody long[] list, BindingResult bindingResult) {
+    public ResponseEntity<Object> rejectCandidate(@Valid @RequestBody long[] list, BindingResult bindingResult) {
         ResponseEntity<Object> errors = responceErrorValidation.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errors)) return errors;
 
@@ -135,7 +140,6 @@ public class VacancyController {
             if(vacancy.getCandidateList().get(i).getId() == list[1]){
                 vacancy.getInjectedCandidateList().add(vacancy.getCandidateList().get(i));
                 vacancy.getCandidateList().remove(vacancy.getCandidateList().get(i));
-
             }
         }
 
@@ -143,6 +147,7 @@ public class VacancyController {
         return new ResponseEntity<>(vacancy, HttpStatus.OK);
     }
 
+    //в массиве передаем id вакансии ([0]) и id кандидата ([1])
     @PostMapping("/approveCandidate")
     public ResponseEntity<Object> approveCandidate(@Valid @RequestBody long[] list, BindingResult bindingResult) {
         ResponseEntity<Object> errors = responceErrorValidation.mapValidationService(bindingResult);
@@ -154,7 +159,14 @@ public class VacancyController {
         for(int i = 0; i < vacancy.getCandidateList().size(); i++){
             if(vacancy.getCandidateList().get(i).getId() == list[1]){
                 vacancy.getApprovedCandidateList().add(vacancy.getCandidateList().get(i));
+
+                producerService.produce(new Message(vacancy.getCandidateList().get(i).getEmail(), vacancy.getCandidateList().get(i).getName(),
+                        vacancy.getRecruiter().getName(), vacancy.getRecruiter().getLastname(), vacancy.getRecruiter().getPhoneNumber(),
+                        vacancy.getRecruiter().getEmail(), vacancy.getCompany(), vacancy.getProfession()));
+
                 vacancy.getCandidateList().remove(vacancy.getCandidateList().get(i));
+
+
             }
         }
         vacancyRepository.save(vacancy);
@@ -162,28 +174,28 @@ public class VacancyController {
     }
 
     @GetMapping("/vacancys")
-    public ResponseEntity<List<Vacancy>> getAllVacancysForUser(Principal principal) {
+    public ResponseEntity<List<Vacancy>> getAllVacanciesForUser(Principal principal) {
 
-        List<Vacancy> vacancyList = userService.getAllVacancysForUser(principal);
-        return new ResponseEntity<>(vacancyList, HttpStatus.OK);
+        List<Vacancy> vacanciesList = userService.getAllVacancysForUser(principal);
+        return new ResponseEntity<>(vacanciesList, HttpStatus.OK);
     }
 
     @GetMapping("/injectedVacancyForUser")
-    public ResponseEntity<List<Vacancy>> getInjectedVacancysForUser(Principal principal) {
+    public ResponseEntity<List<Vacancy>> getInjectedVacanciesForUser(Principal principal) {
 
         List<Vacancy> vacancyList = userService.getInjectedVacancysForUser(principal);
         return new ResponseEntity<>(vacancyList, HttpStatus.OK);
     }
 
     @GetMapping("/acceptedVacancyForUser")
-    public ResponseEntity<List<Vacancy>> getAcceptedVacancysForUser(Principal principal) {
+    public ResponseEntity<List<Vacancy>> getAcceptedVacanciesForUser(Principal principal) {
 
         List<Vacancy> vacancyList = userService.getAcceptedVacancysForUser(principal);
         return new ResponseEntity<>(vacancyList, HttpStatus.OK);
     }
 
     @GetMapping("/vacancy/{id}")
-    public ResponseEntity<Vacancy> getUserProfile(@PathVariable("id") Long id) {
+    public ResponseEntity<Vacancy> getVacancyById(@PathVariable("id") Long id) {
 
         Optional<Vacancy> op = vacancyRepository.findById(id);
         Vacancy vacancy = op.get();
@@ -215,10 +227,6 @@ public class VacancyController {
         List<Vacancy> vacancyList = vacancyRepository.findAll();
         ArrayList<Vacancy> result = new ArrayList<>();
 
-        if(user.getRole().equals("Рекрутер")){
-            return new ResponseEntity<>(vacancyList, HttpStatus.OK);
-        }
-
         if(user.getRole().equals("Работник")){
             for(Vacancy vacancy : vacancyList){
                 if(!vacancy.getCandidateList().contains(user) && !vacancy.getInjectedCandidateList().contains(user) && !vacancy.getApprovedCandidateList().contains(user)){
@@ -227,6 +235,6 @@ public class VacancyController {
             }
             return new ResponseEntity<>(result, HttpStatus.OK);
         }
-        return new ResponseEntity<>(vacancyList, HttpStatus.OK);
+        else return new ResponseEntity<>(vacancyList, HttpStatus.OK);
     }
 }

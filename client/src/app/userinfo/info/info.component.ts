@@ -78,7 +78,7 @@ export class InfoComponent implements OnInit {
    if (this.selectedFile != null) {
      this.userService.uploadImageToUser(this.selectedFile)
      .subscribe(() => {
-       this.notificationService.showSnackBar('Profile Image updated successfully');
+       this.notificationService.showSnackBar('Фото профиля успешно изменено!');
      });
    }
  }

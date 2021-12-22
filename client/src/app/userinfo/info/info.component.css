@@ -6,9 +6,8 @@
 }
 
 .profile-image {
-  border-radius: 50%;
   width: 225px;
-  height: 250px;
+  height: 300px;
   display: block;
   margin-left: auto;
   margin-right: auto;

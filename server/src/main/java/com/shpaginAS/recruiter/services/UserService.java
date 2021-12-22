@@ -46,8 +46,12 @@ public class UserService {
         user.setLastname(userIn.getLastname());
         user.setUsername(userIn.getUsername());
         user.setRole(userIn.getRole());
+        if(userIn.getRole().equals("Рекрутер")){
+            user.setProfession("Рекрутер");
+        }
         user.setPassword(bCryptPasswordEncoder.encode(userIn.getPassword()));
         user.getRoles().add(ERole.ROLE_USER);
+        user.setRegistered(false);
 
         try {
             LOG.info("Saving User {}", userIn.getEmail());

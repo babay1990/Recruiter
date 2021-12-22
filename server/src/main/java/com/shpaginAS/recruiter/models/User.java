@@ -56,6 +56,8 @@ public class User implements UserDetails, Serializable {
     @Transient
     private Collection<? extends GrantedAuthority> authorities;
 
+    private boolean isRegistered;
+
     public User() {
     }
 
@@ -208,6 +210,14 @@ public class User implements UserDetails, Serializable {
 
     public void setSummaryBytes(byte[] summaryBytes) {
         this.summaryBytes = summaryBytes;
+    }
+
+    public boolean isRegistered() {
+        return isRegistered;
+    }
+
+    public void setRegistered(boolean registered) {
+        isRegistered = registered;
     }
 
     @Override

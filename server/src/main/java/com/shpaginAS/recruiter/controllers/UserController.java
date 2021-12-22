@@ -70,13 +70,13 @@ public class UserController {
         if (!ObjectUtils.isEmpty(errors)) return errors;
 
         User user = userService.updateUser(userDTO, principal);
-        UserDTO userUpdated = userFacade.userToUserDTO(user);
+        UserDTO updatedUser = userFacade.userToUserDTO(user);
 
-        return new ResponseEntity<>(userUpdated, HttpStatus.OK);
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
     @GetMapping("/details/{userId}")
-    public ResponseEntity<UserDTO> getUserDetails(@PathVariable("userId") Long userId) {
+    public ResponseEntity<UserDTO> userDetails(@PathVariable("userId") Long userId) {
 
         Optional<User> op = userRepository.findUserById(userId);
         User user = op.get();
@@ -101,7 +101,7 @@ public class UserController {
     }
 
     @GetMapping("/summary/{userId}")
-    public ResponseEntity<byte[]> saveSummary(@PathVariable("userId") Long userId) throws Exception {
+    public ResponseEntity<byte[]> showSummary(@PathVariable("userId") Long userId) throws Exception {
 
         Optional<User> op = userRepository.findUserById(userId);
         User user = op.get();

@@ -2,7 +2,6 @@ package com.shpaginAS.recruiter.validations;
 
 import com.shpaginAS.recruiter.annotations.ValidEmail;
 
-
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import java.util.regex.Matcher;
@@ -14,7 +13,6 @@ public class EmailValidator implements ConstraintValidator<ValidEmail, String> {
 
     @Override
     public void initialize(ValidEmail constraintAnnotation) {
-
     }
 
     @Override

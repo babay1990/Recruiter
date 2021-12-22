@@ -46,11 +46,11 @@ export class LoginComponent implements OnInit {
       this.tokenStorage.saveToken(data.token);
       this.tokenStorage.saveUser(data);
 
-      this.notificationService.showSnackBar('Successfully logged in');
+      this.notificationService.showSnackBar("Успешный вход");
       this.router.navigate(['/']);
       window.location.reload();
     }, error => {
-      this.notificationService.showSnackBar("Неправильный логин или пароль");
+      this.notificationService.showSnackBar("Убедитесь что подтвердили email и ввели правильные логин или пароль");
     });
   }
 
