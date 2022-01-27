@@ -53,4 +53,12 @@ export class MainComponent implements OnInit {
         this.vacancys = data;
       });
   }
+
+  reset(): void {
+    this.vacancyService.getVacancyList()
+      .subscribe(data => {
+      console.log(data);
+      this.vacancys = data;
+      });
+    }
 }

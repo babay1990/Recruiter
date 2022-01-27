@@ -29,16 +29,19 @@ import java.util.Optional;
 
 public class UserController {
 
+    private final UserService userService;
+    private final UserFacade userFacade;
+    private final UserRepository userRepository;
+    private final ResponceErrorValidation responceErrorValidation;
+
     @Autowired
-    private UserService userService;
-    @Autowired
-    private UserFacade userFacade;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private ResponceErrorValidation responceErrorValidation;
-    @Autowired
-    private VacancyRepository vacancyRepository;
+    public UserController(UserService userService, UserFacade userFacade, UserRepository userRepository,
+                          ResponceErrorValidation responceErrorValidation, VacancyRepository vacancyRepository){
+        this.userService = userService;
+        this.userFacade = userFacade;
+        this.userRepository = userRepository;
+        this.responceErrorValidation = responceErrorValidation;
+    }
 
     @GetMapping("/")
     public ResponseEntity<UserDTO> getCurrentUser(Principal principal) {
@@ -60,9 +63,8 @@ public class UserController {
         user.setImageBytes(userService.compressBytes(file.getBytes()));
         userRepository.save(user);
 
-        return ResponseEntity.ok(new MessageResponse("Image Uploaded Successfully"));
+        return ResponseEntity.ok(new MessageResponse("Фотография успешно загружена!"));
     }
-
 
     @PostMapping("/update")
     public ResponseEntity<Object> updateUser(@Valid @RequestBody UserDTO userDTO, BindingResult bindingResult, Principal principal) {
@@ -85,14 +87,12 @@ public class UserController {
         if(userDTO.getImageBytes() != null){
             userDTO.setImageBytes(userService.decompressBytes(userDTO.getImageBytes()));
         }
-
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
     @PostMapping("/uploadSummary")
     public ResponseEntity<MessageResponse> uploadSummaryToUser(@RequestParam("file") MultipartFile file,
                                                              Principal principal) throws IOException {
-
         User user = userService.getCurrentUser(principal);
         user.setSummaryBytes(file.getBytes());
         userRepository.save(user);

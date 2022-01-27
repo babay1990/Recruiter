@@ -77,7 +77,7 @@ public class AuthController {
         userService.createUser(signupRequest);
         producerService.sendEmailForAcceptRegistration(signupRequest.getEmail());
 
-        return ResponseEntity.ok(new MessageResponse("User registered successfully"));
+        return ResponseEntity.ok(new MessageResponse("Пользователь успешно зарегестрирован!"));
     }
 
     @GetMapping("/acceptRegistration")

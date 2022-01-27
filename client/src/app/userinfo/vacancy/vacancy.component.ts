@@ -77,7 +77,7 @@ export class VacancyComponent implements OnInit {
     let list: number[] = [this.vacancy.id, candidateId];
     this.vacancyService.injectCandidate(list)
       .subscribe(() => {
-         this.notificationService.showSnackBar('Кандидат успешно удален!');
+         this.notificationService.showSnackBar('Кандидат переведен в список отклоненных!');
          this.router.navigate(['info']);
       });
 

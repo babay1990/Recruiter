@@ -28,49 +28,38 @@ import java.util.Optional;
 @RequestMapping("api/vacancy")
 public class VacancyController {
 
+    private final VacancyService vacancyService;
+    private final ResponceErrorValidation responceErrorValidation;
+    private final UserService userService;
+    private final VacancyRepository vacancyRepository;
+    private final KafkaProducerService producerService;
+
     @Autowired
-    private VacancyService vacancyService;
-    @Autowired
-    private ResponceErrorValidation responceErrorValidation;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private VacancyRepository vacancyRepository;
-    @Autowired
-    private KafkaProducerService producerService;
+    public VacancyController(VacancyService vacancyService, ResponceErrorValidation responceErrorValidation, UserService userService,
+                             VacancyRepository vacancyRepository, KafkaProducerService producerService){
+        this.vacancyService = vacancyService;
+        this.responceErrorValidation = responceErrorValidation;
+        this.userService = userService;
+        this.vacancyRepository = vacancyRepository;
+        this.producerService = producerService;
+    }
 
     @PostMapping("/create")
     public ResponseEntity<Object> createVacancy(@Valid @RequestBody VacancyDTO vacancyDTO,
-                                             BindingResult bindingResult,
-                                             Principal principal) {
+                                             BindingResult bindingResult, Principal principal) {
         ResponseEntity<Object> errors = responceErrorValidation.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errors)) return errors;
 
         vacancyService.createVacancy(vacancyDTO, principal);
-
         return ResponseEntity.ok(new MessageResponse("Vacancy created!"));
     }
 
     @PostMapping("/search")
-    public ResponseEntity<Object> findAVacancy(@Valid @RequestBody String str){
+    public ResponseEntity<Object> findAVacancy(@Valid @RequestBody String str, Principal principal){
 
-        Iterable<Vacancy> allVacancies = vacancyRepository.findAll();
-        ArrayList<Vacancy> result = new ArrayList<>();
-
-        if(!str.isEmpty()){
-            for(Vacancy vacancy : allVacancies){
-                if(vacancy.getProfession().contains(str) || vacancy.getProfession().toUpperCase().contains(str) ||
-                        vacancy.getProfession().toLowerCase().contains(str)){
-                    result.add(vacancy);
-                }
-            }
-            return new ResponseEntity<>(result, HttpStatus.OK);
-
-        } else return new ResponseEntity<>(allVacancies, HttpStatus.OK);
-
-
+        List<Vacancy> searchVacancyListForUser = vacancyService.getSearchVacancyForUser(str, principal);
+        return new ResponseEntity<>(searchVacancyListForUser, HttpStatus.OK);
     }
-
 
     @GetMapping("/canApplyVacancy/{id}")
     public boolean canApplyVacancy(@PathVariable Long id, Principal principal){
@@ -78,24 +67,7 @@ public class VacancyController {
         Optional<Vacancy> op = vacancyRepository.findById(id);
         Vacancy vacancy = op.get();
         User user = userService.getCurrentUser(principal);
-
-        ArrayList<String> candidateList = new ArrayList<>();
-        for(User users : vacancy.getCandidateList()){
-            candidateList.add(users.getEmail());
-        }
-
-        ArrayList<String> injectedList = new ArrayList<>();
-        for(User users : vacancy.getInjectedCandidateList()){
-            injectedList.add(users.getEmail());
-        }
-
-        ArrayList<String> approvedList = new ArrayList<>();
-        for(User users : vacancy.getApprovedCandidateList()){
-            approvedList.add(users.getEmail());
-        }
-
-        if(candidateList.contains(user.getEmail()) || approvedList.contains(user.getEmail()) || injectedList.contains(user.getEmail())) return true;
-        else return false;
+        return vacancy.getCandidateList().contains(user) || vacancy.getApprovedCandidateList().contains(user) || vacancy.getInjectedCandidateList().contains(user);
     }
 
     @PostMapping("/deleteVacancy")
@@ -112,19 +84,9 @@ public class VacancyController {
     public ResponseEntity<Object> updateVacancy(@Valid @RequestBody Vacancy vacancy, BindingResult bindingResult) {
         ResponseEntity<Object> errors = responceErrorValidation.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errors)) return errors;
+        vacancyService.updateVacancy(vacancy);
 
-        Optional<Vacancy> op = vacancyRepository.findById(vacancy.getId());
-
-        Vacancy vacancyUpdated = op.get();
-
-        vacancyUpdated.setCompany(vacancy.getCompany());
-        vacancyUpdated.setProfession(vacancy.getProfession());
-        vacancyUpdated.setDescription(vacancy.getDescription());
-        vacancyUpdated.setAdress(vacancy.getAdress());
-
-        vacancyRepository.save(vacancyUpdated);
-
-        return new ResponseEntity<>(vacancyUpdated, HttpStatus.OK);
+        return ResponseEntity.ok(new MessageResponse("Vacancy updated!"));
     }
 
     //в массиве list передаем id вакансии ([0]) и id кандидата ([1])
@@ -165,8 +127,6 @@ public class VacancyController {
                         vacancy.getRecruiter().getEmail(), vacancy.getCompany(), vacancy.getProfession()));
 
                 vacancy.getCandidateList().remove(vacancy.getCandidateList().get(i));
-
-
             }
         }
         vacancyRepository.save(vacancy);
@@ -223,18 +183,7 @@ public class VacancyController {
     @GetMapping("/vacancyList")
     public ResponseEntity<List<Vacancy>> getVacancyList(Principal principal) {
 
-        User user = userService.getCurrentUser(principal);
-        List<Vacancy> vacancyList = vacancyRepository.findAll();
-        ArrayList<Vacancy> result = new ArrayList<>();
-
-        if(user.getRole().equals("Работник")){
-            for(Vacancy vacancy : vacancyList){
-                if(!vacancy.getCandidateList().contains(user) && !vacancy.getInjectedCandidateList().contains(user) && !vacancy.getApprovedCandidateList().contains(user)){
-                    result.add(vacancy);
-                }
-            }
-            return new ResponseEntity<>(result, HttpStatus.OK);
-        }
-        else return new ResponseEntity<>(vacancyList, HttpStatus.OK);
+        List<Vacancy> result = vacancyService.getVacancyListForUser(principal);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }

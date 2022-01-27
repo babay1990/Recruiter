@@ -21,6 +21,9 @@
       <h2>Телефон: {{user.phoneNumber}}</h2>
       <h2>Email: {{user.email}}</h2>
       <button mat-flat-button color="primary" (click)="openEditDialog()">Редактировать информацию</button>
+      <br>
+      <br>
+      <button *ngIf="user.role == 'Работник'" mat-flat-button color="primary" routerLink="/main">Посмотреть список вакансий</button>
     </div>
 
     <div *ngIf="user.role == 'Работник'">

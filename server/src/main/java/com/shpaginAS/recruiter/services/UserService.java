@@ -70,7 +70,6 @@ public class UserService {
         String username = principal.getName();
         return userRepository.findUserByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Username not found with username " + username));
-
     }
 
     public byte[] compressBytes(byte[] data) {
@@ -124,7 +123,6 @@ public class UserService {
         if(user.getRole().equals("Рекрутер")){
             return vacancyRepository.findAllByRecruiterOrderById(user);
         }else {
-
             List<Vacancy> result = new ArrayList<>();
             List<Vacancy> list = vacancyRepository.findAll();
 

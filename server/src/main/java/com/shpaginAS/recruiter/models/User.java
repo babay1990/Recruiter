@@ -251,6 +251,9 @@ public class User implements UserDetails, Serializable {
 
     @Override
     public boolean equals(Object o) {
+        if(o == this) return true;
+        if(o == null || o.getClass() != this.getClass()) return false;
+
         User user = (User) o;
         return getEmail().equals(user.getEmail());
     }
